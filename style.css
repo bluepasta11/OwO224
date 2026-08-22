@@ -1,0 +1,406 @@
+:root {
+    --bg-dark: #121212;
+    --card-bg: #1e1e1e;
+    --accent-gold: #f1c40f;
+    --accent-orange: #e67e22;
+    --text-color: #e0e0e0;
+    --bright-text: #ffffff;
+    --border-color: #333;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-color);
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+}
+
+/* Header & Navigation */
+header {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('owo.jpg') no-repeat center center/cover;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    border-bottom: 2px solid var(--accent-gold);
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 2.2rem;
+    color: var(--accent-gold);
+    text-shadow: 2px 2px 4px #000;
+}
+
+.auth-btn-area {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.auth-btn, .save-btn {
+    background-color: rgba(0,0,0,0.6);
+    color: #fff;
+    border: 1px solid var(--accent-gold);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.save-btn {
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
+    display: none;
+}
+
+body.editable-mode .save-btn {
+    display: inline-block !important;
+}
+
+nav {
+    background-color: #0d0d0d;
+    padding: 12px 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+.nav-links a {
+    color: #aaa;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--accent-gold);
+}
+
+/* Layout */
+.main-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+}
+
+.section {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--accent-gold);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.section-header h2 {
+    font-size: 1.3rem;
+    color: var(--accent-gold);
+}
+
+/* List & Tables */
+.rule-list {
+    list-style: none;
+}
+
+.rule-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th, .schedule-table td {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    text-align: left;
+}
+
+.schedule-table th {
+    background-color: #252525;
+    color: var(--accent-gold);
+}
+
+/* ========================================== */
+/* 관리자 전용 버튼 제어 */
+/* ========================================== */
+.btn-del,
+.btn-add-mini,
+.btn-tool {
+    display: none !important;
+}
+
+body.editable-mode .btn-del {
+    display: inline-block !important;
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+body.editable-mode .btn-add-mini {
+    display: inline-block !important;
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 1px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.btn-add-mini:hover {
+    background: #219150;
+}
+
+body.editable-mode .btn-tool {
+    display: inline-block !important;
+    background: #444;
+    color: #fff;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+body.editable-mode .editable-field {
+    outline: 1px dashed var(--accent-gold);
+    padding: 2px 4px;
+    background-color: rgba(241, 196, 15, 0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.85rem;
+    color: #666;
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+}
+
+/* ========================================== */
+/* 플로팅 길드원 패널 스타일 (스크롤 & 접기 기능) */
+/* ========================================== */
+.guild-members-sidebar {
+    position: fixed;
+    top: 200px;
+    left: 15px;
+    width: 260px;
+    height: calc(100vh - 220px);
+    background: #f4eae1;
+    border: 2px solid #b89774;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+.sidebar-header {
+    background: linear-gradient(180deg, #8b5a2b 0%, #5a3818 100%);
+    color: #fff;
+    padding: 10px 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #422810;
+    flex-shrink: 0;
+}
+
+.sidebar-content {
+    padding: 8px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.officer-section {
+    background: #eaddca;
+    border: 1px solid #c2b19c;
+    border-radius: 8px;
+    padding: 8px 6px;
+}
+
+.officer-title-bar {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #6b4c33;
+    margin-bottom: 6px;
+    text-align: center;
+    border-bottom: 1px dashed #b8a590;
+    padding-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.officer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.officer-card {
+    background: #fff;
+    border: 1px solid #d4c4b0;
+    border-radius: 6px;
+    padding: 4px 6px;
+    text-align: center;
+    position: relative;
+}
+
+.officer-role {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #d35400;
+}
+
+.officer-name {
+    font-size: 0.8rem;
+    color: #2c3e50;
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+.rank-card {
+    background: #fdfbf7;
+    border: 1px solid #dcd1c4;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.rank-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: #ebdccb;
+    cursor: pointer;
+    user-select: none;
+}
+
+.rank-header:hover {
+    background: #e3d2be;
+}
+
+.rank-badge-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rank-badge {
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.7rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+}
+
+.badge-r5 { background: #f1c40f; border: 1px solid #d35400; }
+.badge-r4 { background: #e67e22; border: 1px solid #b03a2e; }
+.badge-r3 { background: #d35400; border: 1px solid #7e5109; }
+.badge-r2 { background: #7f8c8d; border: 1px solid #515a5a; }
+.badge-r1 { background: #95a5a6; border: 1px solid #707b7c; }
+
+.rank-title {
+    font-weight: bold;
+    color: #4a3b32;
+    font-size: 0.85rem;
+}
+
+.rank-right-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rank-count {
+    font-size: 0.75rem;
+    color: #7f6c5f;
+    font-weight: bold;
+}
+
+.toggle-icon {
+    font-size: 0.7rem;
+    color: #6b4c33;
+    transition: transform 0.2s;
+}
+
+.rank-card.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.rank-card.collapsed .member-list {
+    display: none;
+}
+
+.member-list {
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: #fff;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.member-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    padding: 2px 4px;
+}
+
+@media (max-width: 1400px) {
+    .guild-members-sidebar { display: none; }
+}

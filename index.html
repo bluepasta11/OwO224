@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 메인 안내</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .th-admin, .td-admin {
+            display: none;
+            width: 80px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        body.editable-mode .th-admin,
+        body.editable-mode .td-admin {
+            display: table-cell;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 왼쪽 플로팅 길드원 사이드바 -->
+    <aside class="guild-members-sidebar" id="sidebar-panel">
+        <div class="sidebar-header">
+            <span>🛡️ 길드원 목록</span>
+        </div>
+        <div class="sidebar-content" id="sidebar-content">
+            
+            <!-- 직책 영역 -->
+            <div class="officer-section">
+                <div class="officer-title-bar">
+                    <span>⚔️ 길드 주요 직책</span>
+                    <button class="btn-add-mini" onclick="addOfficerPrompt()">+ 추가</button>
+                </div>
+                <div class="officer-grid" id="officer-grid">
+                    <div class="officer-card">
+                        <div class="officer-role">전쟁의 신</div>
+                        <div class="officer-name editable-field">P Chef</div>
+                        <button class="btn-del" onclick="deleteItem(this)">x</button>
+                    </div>
+                    <div class="officer-card">
+                        <div class="officer-role">모집관</div>
+                        <div class="officer-name editable-field">TaeYang</div>
+                        <button class="btn-del" onclick="deleteItem(this)">x</button>
+                    </div>
+                    <div class="officer-card">
+                        <div class="officer-role">여신</div>
+                        <div class="officer-name editable-field">LuLu</div>
+                        <button class="btn-del" onclick="deleteItem(this)">x</button>
+                    </div>
+                    <div class="officer-card">
+                        <div class="officer-role">집사</div>
+                        <div class="officer-name editable-field">새벽</div>
+                        <button class="btn-del" onclick="deleteItem(this)">x</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- R5 도깨비 -->
+            <div class="rank-card" data-rank="R5">
+                <div class="rank-header" onclick="toggleRankCard(this)">
+                    <div class="rank-badge-box">
+                        <span class="rank-badge badge-r5">R5</span>
+                        <span class="rank-title editable-field" onclick="event.stopPropagation()">도깨비</span>
+                    </div>
+                    <div class="rank-right-box">
+                        <span class="rank-count">👤 <span class="count-val">0</span></span>
+                        <button class="btn-add-mini" onclick="event.stopPropagation(); addRankMember('R5')">+</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="member-list">
+                    <div class="member-item"><span class="editable-field">다랑꼬당</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                </div>
+            </div>
+
+            <!-- R4 저승이 -->
+            <div class="rank-card" data-rank="R4">
+                <div class="rank-header" onclick="toggleRankCard(this)">
+                    <div class="rank-badge-box">
+                        <span class="rank-badge badge-r4">R4</span>
+                        <span class="rank-title editable-field" onclick="event.stopPropagation()">저승이</span>
+                    </div>
+                    <div class="rank-right-box">
+                        <span class="rank-count">👤 <span class="count-val">0</span></span>
+                        <button class="btn-add-mini" onclick="event.stopPropagation(); addRankMember('R4')">+</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="member-list">
+                    <div class="member-item"><span class="editable-field">꼬들이-aldente</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">구리아재</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">P Chef</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Medi 메 디</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">LuLu</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">새벽</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">끄롱-Crong</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">까꿍</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">두더Zl Mole</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">TaeYang</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">회색곰 totoro</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Reami OwO</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                </div>
+            </div>
+
+            <!-- R3 흡혈귀 -->
+            <div class="rank-card" data-rank="R3">
+                <div class="rank-header" onclick="toggleRankCard(this)">
+                    <div class="rank-badge-box">
+                        <span class="rank-badge badge-r3">R3</span>
+                        <span class="rank-title editable-field" onclick="event.stopPropagation()">흡혈귀</span>
+                    </div>
+                    <div class="rank-right-box">
+                        <span class="rank-count">👤 <span class="count-val">0</span></span>
+                        <button class="btn-add-mini" onclick="event.stopPropagation(); addRankMember('R3')">+</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="member-list">
+                    <div class="member-item"><span class="editable-field">곰사탕</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">준 콩</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">따릉0320</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">소라노 Sorano</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">로 그</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">우리동네맹구</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">울빌 Mati</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">물방울방울</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">애기호랭이</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">그해11월</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">여행닭</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">쫌 zzhome</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Cat Tp</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">꼿수니</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">ARJUN C</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">앙 돌</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">TORI꼬당</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Suttak-나주</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                </div>
+            </div>
+
+            <!-- R2 구미호 -->
+            <div class="rank-card" data-rank="R2">
+                <div class="rank-header" onclick="toggleRankCard(this)">
+                    <div class="rank-badge-box">
+                        <span class="rank-badge badge-r2">R2</span>
+                        <span class="rank-title editable-field" onclick="event.stopPropagation()">구미호</span>
+                    </div>
+                    <div class="rank-right-box">
+                        <span class="rank-count">👤 <span class="count-val">0</span></span>
+                        <button class="btn-add-mini" onclick="event.stopPropagation(); addRankMember('R2')">+</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="member-list">
+                    <div class="member-item"><span class="editable-field">타데이 Tadej</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">짱구z</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">gazaniga</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">슈퍼 차므치</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">듕듕 OwO</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">아오킹받</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">무지개하늘</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">호 야</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">루리몽 Ruri</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">낭만도깨비</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">meowsmeows</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Ralram</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">빡빡 OwO</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">브레드 홍</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">6시내고향</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">작심삼일</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">뿌 돌</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Leidyane</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">pubabo</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                </div>
+            </div>
+
+            <!-- R1 캐스퍼 -->
+            <div class="rank-card" data-rank="R1">
+                <div class="rank-header" onclick="toggleRankCard(this)">
+                    <div class="rank-badge-box">
+                        <span class="rank-badge badge-r1">R1</span>
+                        <span class="rank-title editable-field" onclick="event.stopPropagation()">캐스퍼</span>
+                    </div>
+                    <div class="rank-right-box">
+                        <span class="rank-count">👤 <span class="count-val">0</span></span>
+                        <button class="btn-add-mini" onclick="event.stopPropagation(); addRankMember('R1')">+</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="member-list">
+                    <div class="member-item"><span class="editable-field">ww77</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Youssef 111</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">FunnYGamJa</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">pky1</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">티 티</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">킹왕짱</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">배 뽀</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">바베크</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">누누양</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">낭만야르렁</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">King1A</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">똥가리</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">헬로멍</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">신탱구리</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">아하핫</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Gpwoo</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">A7med Sabry</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">DOIL</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">DEJAVUE</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Rony 12</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">|파더| dad</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">sanad98</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">feilat</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Gowild</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Hurikana</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">동하빠</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">Killah3</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                    <div class="member-item"><span class="editable-field">PharaoaH</span><button class="btn-del" onclick="deleteItem(this)">x</button></div>
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <header>
+        <h1 id="guild-title" class="editable-field">OWO GUILD</h1>
+        <div class="auth-btn-area">
+            <button id="save-btn" class="save-btn" onclick="saveData()">💾 저장하기</button>
+            <button id="pw-change-btn" class="save-btn" style="background-color: #2980b9;" onclick="changeAdminPassword()">🔒 비번 변경</button>
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html" class="active">홈 (메인)</a>
+            <a href="events.html">시즌 & 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container" id="main-content">
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2>📢 주요 일정 요약 📢</h2>
+                </div>
+                <p class="editable-field" id="summary-text">[#226 STW 연맹 쟁탈전 예정] 오늘 밤 11:00 (ST 12:00) 진행됩니다. 사전 8시 30분 집결 부탁드립니다.</p>
+                <a href="events.html" style="color:#f39c12; text-decoration:none; font-size:0.9rem; margin-top:10px; display:inline-block;">👉 전체 시즌 & 정기 이벤트 상세 보러가기</a>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>📜 길드 주요 규칙</h2>
+                    <button class="btn-tool" onclick="addRule()">+ 규칙 추가</button>
+                </div>
+                <ul class="rule-list" id="rule-list-container">
+                    <li><span class="editable-field">서버: #224 서버</span><button class="btn-del" onclick="deleteItem(this)">삭제</button></li>
+                    <li><span class="editable-field">투협력: 지속적인 성장 및 쟁탈전 필수 참석</span><button class="btn-del" onclick="deleteItem(this)">삭제</button></li>
+                    <li><span class="editable-field">출석: 미접속 시 사전에 길드장/간부 공유</span><button class="btn-del" onclick="deleteItem(this)">삭제</button></li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>📅 주간 일정표</h2>
+                    <button class="btn-tool" onclick="addSchedule()">+ 일정 추가</button>
+                </div>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>요일</th>
+                            <th>시간 (KST / ST)</th>
+                            <th>이벤트 내용</th>
+                            <th class="th-admin">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-container">
+                        <tr>
+                            <td><span class="editable-field">오늘</span></td>
+                            <td><span class="editable-field">밤 11:00 (ST 12:00)</span></td>
+                            <td><span class="editable-field">#226 STW 연맹 쟁탈전 시작</span></td>
+                            <td class="td-admin"><button class="btn-del" onclick="deleteRow(this)">삭제</button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="editable-field">내일</span></td>
+                            <td><span class="editable-field">밤 9:00 (ST 10:00)</span></td>
+                            <td><span class="editable-field">쟁탈 구역 텔레포트 오픈</span></td>
+                            <td class="td-admin"><button class="btn-del" onclick="deleteRow(this)">삭제</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>💡 길드 공략 & 팁</h2>
+                    <button class="btn-tool" onclick="addTip()">+ 팁 추가</button>
+                </div>
+                <div id="tips-container">
+                    <div style="margin-bottom:15px; padding-bottom:10px; border-bottom: 1px dashed rgba(255,255,255,0.1);">
+                        <div class="editable-field" style="font-weight:bold; color:var(--bright-text);">쟁탈전 버티기 방어 팁</div>
+                        <div class="editable-field" style="margin-top: 5px; font-size:0.9rem;">공격 진입 방향을 확인 후 방어막 우선 작동</div>
+                        <button class="btn-del" style="margin-top:5px;" onclick="deleteItem(this)">삭제</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026/08/22 곰사탕. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        // 관리자 비밀번호를 localStorage에서 관리 (기본값: "1234")
+        function getAdminPassword() {
+            return localStorage.getItem('owo_admin_pw') || "1234";
+        }
+
+        let isAdmin = false;
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                const password = prompt("관리자 비밀번호를 입력하세요:");
+                if (password === getAdminPassword()) {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                    enableEditing(true);
+                } else if (password !== null) {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+                enableEditing(false);
+            }
+        }
+
+        // 메인페이지 전용 관리자 비밀번호 변경 함수
+        function changeAdminPassword() {
+            if (!isAdmin) return;
+            const currentPw = prompt("현재 관리자 비밀번호를 입력하세요:");
+            if (currentPw !== getAdminPassword()) {
+                alert("비밀번호가 일치하지 않습니다.");
+                return;
+            }
+            const newPw = prompt("새로운 관리자 비밀번호를 입력하세요:");
+            if (!newPw || newPw.trim() === "") {
+                alert("올바른 비밀번호를 입력해주세요.");
+                return;
+            }
+            const confirmPw = prompt("새로운 비밀번호를 한번 더 입력하세요:");
+            if (newPw !== confirmPw) {
+                alert("비밀번호가 서로 일치하지 않습니다.");
+                return;
+            }
+
+            localStorage.setItem('owo_admin_pw', newPw.trim());
+            alert("관리자 비밀번호가 성공적으로 변경되었습니다!");
+        }
+
+        function enableEditing(enable) {
+            document.querySelectorAll('.editable-field').forEach(el => el.contentEditable = enable);
+        }
+
+        function saveData() {
+            const wasAdmin = isAdmin;
+            if (wasAdmin) enableEditing(false);
+
+            localStorage.setItem('owo_v8_main_html', document.getElementById('main-content').innerHTML);
+            localStorage.setItem('owo_v8_sidebar_html', document.getElementById('sidebar-content').innerHTML);
+
+            if (wasAdmin) enableEditing(true);
+            alert("수정사항이 정상적으로 저장되었습니다!");
+        }
+
+        function loadData() {
+            const savedMain = localStorage.getItem('owo_v8_main_html');
+            const savedSidebar = localStorage.getItem('owo_v8_sidebar_html');
+            
+            if (savedMain) document.getElementById('main-content').innerHTML = savedMain;
+            if (savedSidebar) document.getElementById('sidebar-content').innerHTML = savedSidebar;
+            
+            updateMemberCounts();
+        }
+
+        function updateMemberCounts() {
+            document.querySelectorAll('.rank-card').forEach(card => {
+                const count = card.querySelectorAll('.member-item').length;
+                const countEl = card.querySelector('.count-val');
+                if (countEl) countEl.innerText = count;
+            });
+        }
+
+        function toggleRankCard(headerEl) {
+            const card = headerEl.closest('.rank-card');
+            card.classList.toggle('collapsed');
+        }
+
+        function addRankMember(rank) {
+            const name = prompt(`${rank} 등급에 추가할 길드원 닉네임:`);
+            if (name && name.trim() !== "") {
+                const targetCard = document.querySelector(`.rank-card[data-rank="${rank}"] .member-list`);
+                if (targetCard) {
+                    const item = document.createElement('div');
+                    item.className = 'member-item';
+                    item.innerHTML = `<span class="editable-field" contenteditable="${isAdmin}">${name.trim()}</span><button class="btn-del" onclick="deleteItem(this)">x</button>`;
+                    targetCard.appendChild(item);
+                    updateMemberCounts();
+                }
+            }
+        }
+
+        function addOfficerPrompt() {
+            const role = prompt("직책명 입력 (예: 전쟁의 신, 모집관 등):");
+            const name = prompt("담당 길드원 닉네임 입력:");
+            if (role && name) {
+                const grid = document.getElementById('officer-grid');
+                const card = document.createElement('div');
+                card.className = 'officer-card';
+                card.innerHTML = `
+                    <div class="officer-role" contenteditable="${isAdmin}">${role.trim()}</div>
+                    <div class="officer-name editable-field" contenteditable="${isAdmin}">${name.trim()}</div>
+                    <button class="btn-del" onclick="deleteItem(this)">x</button>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function addRule() {
+            const ul = document.getElementById('rule-list-container');
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="editable-field" contenteditable="${isAdmin}">새 규칙 내용</span><button class="btn-del" onclick="deleteItem(this)">삭제</button>`;
+            ul.appendChild(li);
+        }
+
+        function addSchedule() {
+            const tbody = document.getElementById('schedule-container');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="editable-field" contenteditable="${isAdmin}">요일</span></td>
+                <td><span class="editable-field" contenteditable="${isAdmin}">시간</span></td>
+                <td><span class="editable-field" contenteditable="${isAdmin}">내용</span></td>
+                <td class="td-admin"><button class="btn-del" onclick="deleteRow(this)">삭제</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function addTip() {
+            const container = document.getElementById('tips-container');
+            const div = document.createElement('div');
+            div.style.cssText = "margin-bottom:15px; padding-bottom:10px; border-bottom: 1px dashed rgba(255,255,255,0.1);";
+            div.innerHTML = `
+                <div class="editable-field" contenteditable="${isAdmin}" style="font-weight:bold; color:var(--bright-text);">새 팁 제목</div>
+                <div class="editable-field" contenteditable="${isAdmin}" style="margin-top: 5px; font-size:0.9rem;">팁 상세 내용</div>
+                <button class="btn-del" style="margin-top:5px;" onclick="deleteItem(this)">삭제</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function deleteItem(btn) { 
+            const parent = btn.parentElement;
+            parent.remove(); 
+            updateMemberCounts();
+        }
+
+        function deleteRow(btn) { btn.closest('tr').remove(); }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>

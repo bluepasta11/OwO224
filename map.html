@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 쟁탈전 배치도</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .auth-btn-area {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .map-controls {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-controls select, .map-controls button, .auth-btn, .save-btn {
+            background: #111;
+            color: #fff;
+            border: 1px solid #f39c12;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .map-controls button, .save-btn {
+            background-color: #f39c12;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            display: none;
+        }
+
+        body.editable-mode .save-btn {
+            display: inline-block;
+        }
+
+        /* 14x14 그리드용 맵 보드 (910px x 910px) */
+        #map-board {
+            width: 910px;
+            height: 910px;
+            background: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(14, 1fr);
+            grid-template-rows: repeat(14, 1fr);
+            border: 3px solid #000;
+            position: relative;
+            margin: 0 auto;
+            user-select: none;
+        }
+
+        .cell {
+            border: 1px solid #777;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #000;
+            outline: none;
+            text-align: center;
+            word-break: break-all;
+            z-index: 1;
+        }
+
+        /* 중앙 6x6 노란색 영역 (14x14에서 중앙에 정확히 위치) */
+        .center-yellow-zone {
+            position: absolute;
+            top: 28.571%;  /* 4번째 칸 위치 (4/14) */
+            left: 28.571%; /* 4번째 칸 위치 (4/14) */
+            width: 42.857%; /* 6칸 너비 (6/14) */
+            height: 42.857%; /* 6칸 높이 (6/14) */
+            background-color: #ffe066;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 중앙 신전 박스 */
+        .shrine-center-box {
+            width: 40%;
+            height: 40%;
+            background-color: #d4ac0d;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000;
+            line-height: 1.3;
+        }
+
+        /* 노란색 영역 내부 좌우 1칸 TW 타워 박스 */
+        .tw-in-yellow {
+            position: absolute;
+            width: 16.66%;
+            height: 16.66%;
+            background-color: #00a8ff;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #000;
+            z-index: 6;
+        }
+
+        .tw-in-yellow.left {
+            left: 0;
+            top: 41.66%;
+        }
+
+        .tw-in-yellow.right {
+            right: 0;
+            top: 41.66%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚔️ 쟁탈전 배치도 편집기</h1>
+        <div class="auth-btn-area">
+            <button id="save-btn" class="save-btn" onclick="saveMapData()">💾 저장하기</button>
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">홈 (메인)</a>
+            <a href="events.html">시즌 & 정기 이벤트</a>
+            <a href="map.html" class="active">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container map-builder-wrapper">
+            
+            <div class="map-controls">
+                <label style="font-weight:bold; color:#f39c12;">신전 이름:</label>
+                <select id="shrine-select" onchange="updateShrineName()">
+                    <option value="Lv.1 고대신전 I">Lv.1 고대신전 I</option>
+                    <option value="Lv.2 고대신전 II" selected>Lv.2 고대신전 II</option>
+                    <option value="Lv.3 고대신전 III">Lv.3 고대신전 III</option>
+                </select>
+
+                <label style="font-weight:bold; color:#f39c12;">배치 색상:</label>
+                <select id="color-select">
+                    <option value="#f39c12">주황색 (고정멤버)</option>
+                    <option value="#ffb6c1">분홍색 (멤버)</option>
+                    <option value="#ffffff">초기화 (흰색)</option>
+                </select>
+
+                <button onclick="downloadMapImage()">💾 이미지 저장</button>
+            </div>
+
+            <!-- 14x14 그리드 맵 보드 -->
+            <div id="map-board">
+                <!-- 중앙 6x6 노란색 영역 -->
+                <div class="center-yellow-zone">
+                    <div class="tw-in-yellow left">TW</div>
+                    <div class="shrine-center-box" id="shrine-display">
+                        Lv.2 고대신전 II<br>
+                        Lv.2 Ancient Temple II<br>
+                        Lv.2 古代神殿 II
+                    </div>
+                    <div class="tw-in-yellow right">TW</div>
+                </div>
+            </div>
+
+            <p id="edit-notice" style="margin-top: 15px; color: #888; font-size: 0.85rem; text-align: center;">
+                🔒 현재 읽기 전용 상태입니다. 관리자 로그인 후 편집할 수 있습니다.
+            </p>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 OWO GUILD #224. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        const ADMIN_PW = "1234";
+        let isAdmin = false;
+
+        const board = document.getElementById('map-board');
+        const colorSelect = document.getElementById('color-select');
+        const shrineSelect = document.getElementById('shrine-select');
+        const shrineDisplay = document.getElementById('shrine-display');
+
+        // 14x14 셀 (총 196개) 생성
+        function initBoard() {
+            board.querySelectorAll('.cell').forEach(cell => cell.remove());
+            for (let i = 0; i < 196; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.contentEditable = "false";
+                
+                cell.addEventListener('mousedown', (e) => {
+                    if (isAdmin && e.target === cell) {
+                        cell.style.backgroundColor = colorSelect.value;
+                    }
+                });
+
+                board.appendChild(cell);
+            }
+            loadMapData();
+        }
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                const password = prompt("관리자 비밀번호를 입력하세요:");
+                if (password === ADMIN_PW) {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                    document.getElementById('edit-notice').innerText = "💡 각 칸을 클릭하여 색상을 칠하거나, 닉네임을 직접 입력할 수 있습니다.";
+                    enableEditing(true);
+                } else if (password !== null) {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+                document.getElementById('edit-notice').innerText = "🔒 현재 읽기 전용 상태입니다. 관리자 로그인 후 편집할 수 있습니다.";
+                enableEditing(false);
+            }
+        }
+
+        function enableEditing(enable) {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.contentEditable = enable ? "true" : "false";
+            });
+            shrineSelect.disabled = !enable;
+            colorSelect.disabled = !enable;
+        }
+
+        function updateShrineName() {
+            const val = shrineSelect.value;
+            shrineDisplay.innerHTML = `${val}<br>${val.replace('고대신전', 'Ancient Temple')}<br>${val.replace('고대신전', '古代神殿')}`;
+        }
+
+        function saveMapData() {
+            const cells = document.querySelectorAll('.cell');
+            const mapData = [];
+            cells.forEach(cell => {
+                mapData.push({
+                    text: cell.innerText,
+                    bg: cell.style.backgroundColor
+                });
+            });
+            
+            const mapState = {
+                shrine: shrineSelect.value,
+                cells: mapData
+            };
+
+            localStorage.setItem('owo_map_data', JSON.stringify(mapState));
+            alert("배치도 설정이 저장되었습니다!");
+        }
+
+        function loadMapData() {
+            const saved = localStorage.getItem('owo_map_data');
+            if (saved) {
+                const mapState = JSON.parse(saved);
+                shrineSelect.value = mapState.shrine;
+                updateShrineName();
+
+                const cells = document.querySelectorAll('.cell');
+                if (mapState.cells && mapState.cells.length === cells.length) {
+                    cells.forEach((cell, idx) => {
+                        cell.innerText = mapState.cells[idx].text;
+                        cell.style.backgroundColor = mapState.cells[idx].bg;
+                    });
+                }
+            }
+        }
+
+        function downloadMapImage() {
+            html2canvas(board).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '쟁탈전_배치도.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        window.onload = () => {
+            initBoard();
+            enableEditing(false);
+        };
+    </script>
+</body>
+</html>

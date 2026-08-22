@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 시즌 & 정기 이벤트</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1 id="guild-title" class="editable-field">길드 이벤트 종합 안내</h1>
+        <div class="auth-btn-area">
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">홈 (메인)</a>
+            <a href="events.html" class="active">시즌 & 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+        </div>
+    </nav>
+
+    <!-- 중앙 정렬을 보장하는 wrapper 프레임워크 -->
+    <div class="main-wrapper">
+        <div class="container">
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2>🔥 진행 중인 시즌 이벤트</h2>
+                    <button class="btn-tool" onclick="addSeasonEvent()">+ 추가</button>
+                </div>
+                <div id="season-events-container">
+                    <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                        <h3 class="editable-field" style="color: var(--accent-color); font-size: 1.1rem;">#226 STW 연맹 대항 쟁탈전</h3>
+                        <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">메인 쟁탈전: 오늘 밤 11:00 (ST 12:00)</p>
+                        <p class="editable-field" style="font-size:0.9rem;">텔레포트 오픈: 내일 밤 9:00 (ST 10:00)</p>
+                        <p class="editable-field" style="font-size:0.9rem;">작전 지침: 2시간 방어 진형 유지</p>
+                        <button class="btn-del btn-tool" style="margin-top:10px;" onclick="deleteItem(this)">삭제</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>📅 고정 / 정기 이벤트</h2>
+                    <button class="btn-tool" onclick="addRegularEvent()">+ 추가</button>
+                </div>
+                <div id="regular-events-container">
+                    <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                        <h3 class="editable-field" style="color: var(--accent-color); font-size: 1.1rem;">매주 길드 레이드 & 집결 보스</h3>
+                        <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">진행 요일: 매주 토요일/일요일 밤 9시</p>
+                        <p class="editable-field" style="font-size:0.9rem;">참여 조건: 디스코드 음성 채널 접속 필수</p>
+                        <button class="btn-del btn-tool" style="margin-top:10px;" onclick="deleteItem(this)">삭제</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 OWO GUILD #224. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        const ADMIN_PW = "1234";
+        let isAdmin = false;
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                const password = prompt("관리자 비밀번호를 입력하세요:");
+                if (password === ADMIN_PW) {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                    enableEditing(true);
+                } else if (password !== null) {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+                enableEditing(false);
+            }
+        }
+
+        function enableEditing(enable) {
+            document.querySelectorAll('.editable-field').forEach(el => el.contentEditable = enable);
+        }
+    </script>
+</body>
+</html>
