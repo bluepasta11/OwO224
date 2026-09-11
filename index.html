@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OWO Guild - 메인 안내</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <!-- 모든 길드원에게 공유되는 저장소를 위한 Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="auth-modal.js"></script>
     <script src="notice-popup.js"></script>
     <style>
         .th-admin, .td-admin {
@@ -26,10 +28,30 @@
 </head>
 <body>
 
+    <header>
+        <h1 id="guild-title" class="editable-field">OWO GUILD</h1>
+        <div class="auth-btn-area">
+            <button id="save-btn" class="save-btn" onclick="saveData()">💾 저장하기</button>
+            <button id="notice-edit-btn" class="save-btn" style="background-color: #8e44ad;" onclick="editNotice()">📢 공지 편집</button>
+            <button id="pw-change-btn" class="save-btn" style="background-color: #2980b9;" onclick="changeAdminPassword()">🔒 비번 변경</button>
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html" class="active">홈 (메인)</a>
+            <a href="events.html">시즌 & 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+        </div>
+    </nav>
+
     <!-- 왼쪽 플로팅 길드원 사이드바 -->
     <aside class="guild-members-sidebar" id="sidebar-panel">
-        <div class="sidebar-header">
+        <div class="sidebar-header" onclick="toggleSidebarPanel()">
             <span>🛡️ 길드원 목록</span>
+            <span class="toggle-icon" id="sidebar-toggle-icon">▲</span>
         </div>
         <div class="sidebar-content" id="sidebar-content">
             
@@ -229,25 +251,6 @@
         </div>
     </aside>
 
-    <header>
-        <h1 id="guild-title" class="editable-field">OWO GUILD</h1>
-        <div class="auth-btn-area">
-            <button id="save-btn" class="save-btn" onclick="saveData()">💾 저장하기</button>
-            <button id="notice-edit-btn" class="save-btn" style="background-color: #8e44ad;" onclick="editNotice()">📢 공지 편집</button>
-            <button id="pw-change-btn" class="save-btn" style="background-color: #2980b9;" onclick="changeAdminPassword()">🔒 비번 변경</button>
-            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
-        </div>
-    </header>
-
-    <nav>
-        <div class="nav-links">
-            <a href="index.html" class="active">홈 (메인)</a>
-            <a href="events.html">시즌 & 정기 이벤트</a>
-            <a href="map.html">쟁탈전 배치도</a>
-            <a href="blackmoney.html">블랙머니 전장</a>
-        </div>
-    </nav>
-
     <div class="main-wrapper">
         <div class="container" id="main-content">
             
@@ -324,22 +327,17 @@
     </footer>
 
     <script>
-        // 관리자 비밀번호는 이제 Firebase에 저장되어 모든 기기에 동일하게 적용됩니다.
+        // 관리자 비밀번호는 Firebase에 저장되어 모든 기기에 동일하게 적용됩니다.
         let isAdmin = false;
 
-        async function toggleAdmin() {
+        function toggleAdmin() {
             if (!isAdmin) {
-                const password = prompt("관리자 비밀번호를 입력하세요:");
-                if (password === null) return;
-                const current = await getSharedAdminPassword();
-                if (password === current) {
+                openLoginModal(() => {
                     isAdmin = true;
                     document.body.classList.add('editable-mode');
                     document.getElementById('auth-btn').innerText = "관리자 로그아웃";
                     enableEditing(true);
-                } else {
-                    alert("비밀번호가 틀렸습니다.");
-                }
+                });
             } else {
                 isAdmin = false;
                 document.body.classList.remove('editable-mode');
@@ -349,28 +347,9 @@
         }
 
         // 메인페이지 전용 관리자 비밀번호 변경 함수 (모든 기기에 즉시 반영됨)
-        async function changeAdminPassword() {
+        function changeAdminPassword() {
             if (!isAdmin) return;
-            const currentPw = prompt("현재 관리자 비밀번호를 입력하세요:");
-            if (currentPw === null) return;
-            const actual = await getSharedAdminPassword();
-            if (currentPw !== actual) {
-                alert("비밀번호가 일치하지 않습니다.");
-                return;
-            }
-            const newPw = prompt("새로운 관리자 비밀번호를 입력하세요:");
-            if (!newPw || newPw.trim() === "") {
-                alert("올바른 비밀번호를 입력해주세요.");
-                return;
-            }
-            const confirmPw = prompt("새로운 비밀번호를 한번 더 입력하세요:");
-            if (newPw !== confirmPw) {
-                alert("비밀번호가 서로 일치하지 않습니다.");
-                return;
-            }
-
-            await setSharedAdminPassword(newPw.trim());
-            alert("관리자 비밀번호가 성공적으로 변경되었습니다! (모든 길드원 기기에 적용됩니다)");
+            openChangePwModal();
         }
 
         function enableEditing(enable) {
@@ -412,6 +391,13 @@
         function toggleRankCard(headerEl) {
             const card = headerEl.closest('.rank-card');
             card.classList.toggle('collapsed');
+        }
+
+        function toggleSidebarPanel() {
+            const panel = document.getElementById('sidebar-panel');
+            const icon = document.getElementById('sidebar-toggle-icon');
+            panel.classList.toggle('collapsed');
+            icon.textContent = panel.classList.contains('collapsed') ? '▼' : '▲';
         }
 
         function addRankMember(rank) {
