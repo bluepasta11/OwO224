@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="notice-popup.js"></script>
     <style>
         .th-admin, .td-admin {
             display: none;
@@ -232,6 +233,7 @@
         <h1 id="guild-title" class="editable-field">OWO GUILD</h1>
         <div class="auth-btn-area">
             <button id="save-btn" class="save-btn" onclick="saveData()">💾 저장하기</button>
+            <button id="notice-edit-btn" class="save-btn" style="background-color: #8e44ad;" onclick="editNotice()">📢 공지 편집</button>
             <button id="pw-change-btn" class="save-btn" style="background-color: #2980b9;" onclick="changeAdminPassword()">🔒 비번 변경</button>
             <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
         </div>
