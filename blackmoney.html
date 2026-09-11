@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OWO Guild - 블랙머니 전장</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 모든 길드원에게 공유되는 저장소를 위한 Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <!-- 화면을 이미지로 저장하기 위한 html2canvas 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -364,18 +368,20 @@
     </footer>
 
     <script>
-        const ADMIN_PW = "1234";
+        // 관리자 비밀번호는 Firebase에 저장되어 다른 페이지들과 항상 동일하게 유지됩니다.
         let isAdmin = false;
 
-        function toggleAdmin() {
+        async function toggleAdmin() {
             if (!isAdmin) {
                 const password = prompt("관리자 비밀번호를 입력하세요:");
-                if (password === ADMIN_PW) {
+                if (password === null) return;
+                const current = await getSharedAdminPassword();
+                if (password === current) {
                     isAdmin = true;
                     document.body.classList.add('editable-mode');
                     document.getElementById('auth-btn').innerText = "관리자 로그아웃";
                     enableEditing(true);
-                } else if (password !== null) {
+                } else {
                     alert("비밀번호가 틀렸습니다.");
                 }
             } else {
@@ -404,17 +410,24 @@
         function saveData() {
             const wasAdmin = isAdmin;
             if (wasAdmin) enableEditing(false);
-            localStorage.setItem('owo_v8_blackmoney_full', document.getElementById('bm-save-root').innerHTML);
+            db.ref('blackmoney').set(document.getElementById('bm-save-root').innerHTML).then(() => {
+                alert("블랙머니 전장 데이터가 모든 길드원에게 저장되었습니다!");
+            }).catch(err => {
+                console.error(err);
+                alert("저장 중 오류가 발생했습니다. (업로드한 이미지가 너무 클 수 있어요)");
+            });
             if (wasAdmin) enableEditing(true);
-            alert("블랙머니 전장 데이터가 저장되었습니다!");
         }
 
+        // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         function loadData() {
-            const saved = localStorage.getItem('owo_v8_blackmoney_full');
-            if (saved) {
-                document.getElementById('bm-save-root').innerHTML = saved;
-                if (isAdmin) enableEditing(true);
-            }
+            db.ref('blackmoney').on('value', (snapshot) => {
+                const saved = snapshot.val();
+                if (saved) {
+                    document.getElementById('bm-save-root').innerHTML = saved;
+                    if (isAdmin) enableEditing(true);
+                }
+            });
         }
 
         function captureImage() {

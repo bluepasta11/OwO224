@@ -6,6 +6,10 @@
     <title>OWO Guild - 쟁탈전 배치도</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 모든 길드원에게 공유되는 저장소를 위한 Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <style>
         .auth-btn-area {
             position: absolute;
@@ -201,7 +205,7 @@
     </footer>
 
     <script>
-        const ADMIN_PW = "1234";
+        // 관리자 비밀번호는 Firebase에 저장되어 다른 페이지들과 항상 동일하게 유지됩니다.
         let isAdmin = false;
 
         const board = document.getElementById('map-board');
@@ -228,16 +232,18 @@
             loadMapData();
         }
 
-        function toggleAdmin() {
+        async function toggleAdmin() {
             if (!isAdmin) {
                 const password = prompt("관리자 비밀번호를 입력하세요:");
-                if (password === ADMIN_PW) {
+                if (password === null) return;
+                const current = await getSharedAdminPassword();
+                if (password === current) {
                     isAdmin = true;
                     document.body.classList.add('editable-mode');
                     document.getElementById('auth-btn').innerText = "관리자 로그아웃";
                     document.getElementById('edit-notice').innerText = "💡 각 칸을 클릭하여 색상을 칠하거나, 닉네임을 직접 입력할 수 있습니다.";
                     enableEditing(true);
-                } else if (password !== null) {
+                } else {
                     alert("비밀번호가 틀렸습니다.");
                 }
             } else {
@@ -271,31 +277,39 @@
                     bg: cell.style.backgroundColor
                 });
             });
-            
+
             const mapState = {
                 shrine: shrineSelect.value,
                 cells: mapData
             };
 
-            localStorage.setItem('owo_map_data', JSON.stringify(mapState));
-            alert("배치도 설정이 저장되었습니다!");
+            db.ref('map').set(mapState).then(() => {
+                alert("배치도 설정이 모든 길드원에게 저장되었습니다!");
+            }).catch(err => {
+                console.error(err);
+                alert("저장 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
+            });
         }
 
+        // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         function loadMapData() {
-            const saved = localStorage.getItem('owo_map_data');
-            if (saved) {
-                const mapState = JSON.parse(saved);
-                shrineSelect.value = mapState.shrine;
-                updateShrineName();
+            db.ref('map').on('value', (snapshot) => {
+                const mapState = snapshot.val();
+                if (mapState) {
+                    if (mapState.shrine) {
+                        shrineSelect.value = mapState.shrine;
+                        updateShrineName();
+                    }
 
-                const cells = document.querySelectorAll('.cell');
-                if (mapState.cells && mapState.cells.length === cells.length) {
-                    cells.forEach((cell, idx) => {
-                        cell.innerText = mapState.cells[idx].text;
-                        cell.style.backgroundColor = mapState.cells[idx].bg;
-                    });
+                    const cells = document.querySelectorAll('.cell');
+                    if (mapState.cells && mapState.cells.length === cells.length) {
+                        cells.forEach((cell, idx) => {
+                            cell.innerText = mapState.cells[idx].text;
+                            cell.style.backgroundColor = mapState.cells[idx].bg;
+                        });
+                    }
                 }
-            }
+            });
         }
 
         function downloadMapImage() {

@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OWO Guild - 시즌 & 정기 이벤트</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 모든 길드원에게 공유되는 저장소를 위한 Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
 
     <header>
         <h1 id="guild-title" class="editable-field">길드 이벤트 종합 안내</h1>
         <div class="auth-btn-area">
+            <button id="save-btn" class="save-btn" onclick="saveData()">💾 저장하기</button>
             <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
         </div>
     </header>
@@ -35,7 +40,7 @@
                 </div>
                 <div id="season-events-container">
                     <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                        <h3 class="editable-field" style="color: var(--accent-color); font-size: 1.1rem;">#226 STW 연맹 대항 쟁탈전</h3>
+                        <h3 class="editable-field" style="color: var(--accent-gold); font-size: 1.1rem;">#226 STW 연맹 대항 쟁탈전</h3>
                         <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">메인 쟁탈전: 오늘 밤 11:00 (ST 12:00)</p>
                         <p class="editable-field" style="font-size:0.9rem;">텔레포트 오픈: 내일 밤 9:00 (ST 10:00)</p>
                         <p class="editable-field" style="font-size:0.9rem;">작전 지침: 2시간 방어 진형 유지</p>
@@ -51,7 +56,7 @@
                 </div>
                 <div id="regular-events-container">
                     <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                        <h3 class="editable-field" style="color: var(--accent-color); font-size: 1.1rem;">매주 길드 레이드 & 집결 보스</h3>
+                        <h3 class="editable-field" style="color: var(--accent-gold); font-size: 1.1rem;">매주 길드 레이드 & 집결 보스</h3>
                         <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">진행 요일: 매주 토요일/일요일 밤 9시</p>
                         <p class="editable-field" style="font-size:0.9rem;">참여 조건: 디스코드 음성 채널 접속 필수</p>
                         <button class="btn-del btn-tool" style="margin-top:10px;" onclick="deleteItem(this)">삭제</button>
@@ -67,18 +72,20 @@
     </footer>
 
     <script>
-        const ADMIN_PW = "1234";
+        // 관리자 비밀번호는 Firebase에 저장되어 index.html의 "비번 변경"과 항상 동일하게 유지됩니다.
         let isAdmin = false;
 
-        function toggleAdmin() {
+        async function toggleAdmin() {
             if (!isAdmin) {
                 const password = prompt("관리자 비밀번호를 입력하세요:");
-                if (password === ADMIN_PW) {
+                if (password === null) return;
+                const current = await getSharedAdminPassword();
+                if (password === current) {
                     isAdmin = true;
                     document.body.classList.add('editable-mode');
                     document.getElementById('auth-btn').innerText = "관리자 로그아웃";
                     enableEditing(true);
-                } else if (password !== null) {
+                } else {
                     alert("비밀번호가 틀렸습니다.");
                 }
             } else {
@@ -92,6 +99,59 @@
         function enableEditing(enable) {
             document.querySelectorAll('.editable-field').forEach(el => el.contentEditable = enable);
         }
+
+        function addSeasonEvent() {
+            const container = document.getElementById('season-events-container');
+            const div = document.createElement('div');
+            div.style.cssText = "margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;";
+            div.innerHTML = `
+                <h3 class="editable-field" contenteditable="${isAdmin}" style="color: var(--accent-gold); font-size: 1.1rem;">새 시즌 이벤트</h3>
+                <p class="editable-field" contenteditable="${isAdmin}" style="font-size:0.9rem; margin-top:5px;">일정을 입력하세요</p>
+                <button class="btn-del btn-tool" style="margin-top:10px;" onclick="deleteItem(this)">삭제</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addRegularEvent() {
+            const container = document.getElementById('regular-events-container');
+            const div = document.createElement('div');
+            div.style.cssText = "margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;";
+            div.innerHTML = `
+                <h3 class="editable-field" contenteditable="${isAdmin}" style="color: var(--accent-gold); font-size: 1.1rem;">새 정기 이벤트</h3>
+                <p class="editable-field" contenteditable="${isAdmin}" style="font-size:0.9rem; margin-top:5px;">일정을 입력하세요</p>
+                <button class="btn-del btn-tool" style="margin-top:10px;" onclick="deleteItem(this)">삭제</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function deleteItem(btn) {
+            btn.parentElement.remove();
+        }
+
+        function saveData() {
+            const wasAdmin = isAdmin;
+            if (wasAdmin) enableEditing(false);
+
+            db.ref('events/season').set(document.getElementById('season-events-container').innerHTML);
+            db.ref('events/regular').set(document.getElementById('regular-events-container').innerHTML);
+
+            if (wasAdmin) enableEditing(true);
+            alert("이벤트 정보가 모든 길드원에게 저장되었습니다!");
+        }
+
+        // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
+        function loadData() {
+            db.ref('events').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    if (data.season) document.getElementById('season-events-container').innerHTML = data.season;
+                    if (data.regular) document.getElementById('regular-events-container').innerHTML = data.regular;
+                }
+                if (isAdmin) enableEditing(true);
+            });
+        }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
