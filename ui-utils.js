@@ -81,3 +81,8 @@ function markLoaded(el) {
     if (!el) return;
     el.style.opacity = '1';
 }
+
+// Firebase가 응답하지 않는 경우를 대비한 안전장치: 일정 시간 후 강제로 보이게 함
+function revealAfterTimeout(el, ms) {
+    setTimeout(() => markLoaded(el), ms || 3000);
+}

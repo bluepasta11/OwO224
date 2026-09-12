@@ -45,7 +45,7 @@
                     <h2>🔥 진행 중인 시즌 이벤트</h2>
                     <button class="btn-tool" onclick="addSeasonEvent()">+ 추가</button>
                 </div>
-                <div id="season-events-container">
+                <div id="season-events-container" style="opacity:0;">
                     <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
                         <h3 class="editable-field" style="color: var(--accent-gold); font-size: 1.1rem;">#226 STW 연맹 대항 쟁탈전</h3>
                         <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">메인 쟁탈전: 오늘 밤 11:00 (ST 12:00)</p>
@@ -61,7 +61,7 @@
                     <h2>📅 고정 / 정기 이벤트</h2>
                     <button class="btn-tool" onclick="addRegularEvent()">+ 추가</button>
                 </div>
-                <div id="regular-events-container">
+                <div id="regular-events-container" style="opacity:0;">
                     <div style="margin-bottom:15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 6px;">
                         <h3 class="editable-field" style="color: var(--accent-gold); font-size: 1.1rem;">매주 길드 레이드 & 집결 보스</h3>
                         <p class="editable-field" style="font-size:0.9rem; margin-top:5px;">진행 요일: 매주 토요일/일요일 밤 9시</p>
@@ -143,8 +143,8 @@
 
         // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         function loadData() {
-            markLoading(document.getElementById('season-events-container'));
-            markLoading(document.getElementById('regular-events-container'));
+            revealAfterTimeout(document.getElementById('season-events-container'), 3000);
+            revealAfterTimeout(document.getElementById('regular-events-container'), 3000);
             db.ref('events').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {

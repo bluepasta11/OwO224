@@ -242,7 +242,7 @@
     </nav>
 
     <div class="main-wrapper">
-        <div class="container bm-container" id="bm-save-root">
+        <div class="container bm-container" id="bm-save-root" style="opacity:0;">
             
             <!-- 상단 영역: 전장 배치도(확대)와 운용 참고사항(축소) -->
             <div class="top-section-grid">
@@ -423,7 +423,7 @@
 
         // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         function loadData() {
-            markLoading(document.getElementById('bm-save-root'));
+            revealAfterTimeout(document.getElementById('bm-save-root'), 3000);
             db.ref('blackmoney').on('value', (snapshot) => {
                 const saved = snapshot.val();
                 if (saved) {

@@ -58,7 +58,7 @@
             <span>🛡️ 길드원 목록</span>
             <span class="toggle-icon" id="sidebar-toggle-icon">▲</span>
         </div>
-        <div class="sidebar-content" id="sidebar-content">
+        <div class="sidebar-content" id="sidebar-content" style="opacity:0;">
             
             <!-- 직책 영역 -->
             <div class="officer-section">
@@ -257,7 +257,7 @@
     </aside>
 
     <div class="main-wrapper">
-        <div class="container" id="main-content">
+        <div class="container" id="main-content" style="opacity:0;">
             
             <div class="section">
                 <div class="section-header">
@@ -375,8 +375,8 @@
         // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         let mainDataLoadedOnce = false;
         function loadData() {
-            markLoading(document.getElementById('main-content'));
-            markLoading(document.getElementById('sidebar-content'));
+            revealAfterTimeout(document.getElementById('main-content'), 3000);
+            revealAfterTimeout(document.getElementById('sidebar-content'), 3000);
             db.ref('main').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
