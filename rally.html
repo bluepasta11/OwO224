@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 집결전 스케줄러</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
+    <style>
+        .rally-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .rally-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rally-title {
+            color: var(--accent-gold);
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+
+        .rally-meta {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .rally-desc {
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+            white-space: pre-wrap;
+        }
+
+        .rally-progress-bar {
+            background: #333;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rally-progress-fill {
+            background: var(--accent-gold);
+            height: 100%;
+        }
+
+        .rally-participants {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .participant-chip {
+            background: #2c2c2c;
+            border: 1px solid #444;
+            border-radius: 14px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .participant-chip button {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .rally-btn {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .rally-btn-outline {
+            background: transparent;
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .rally-del-btn {
+            display: none;
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        body.editable-mode .rally-del-btn {
+            display: inline-block;
+        }
+
+        #rally-add-btn {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        body.editable-mode #rally-add-btn {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚩 집결전 스케줄러</h1>
+        <div class="auth-btn-area">
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">홈 (메인)</a>
+            <a href="events.html">시즌 &amp; 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+            <a href="rally.html" class="active">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html">연맹대결 계산기</a>
+            <a href="board.html">건의함</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <button id="rally-add-btn" class="rally-btn" onclick="openRallyEditModal()">+ 새 집결전 만들기</button>
+
+            <div id="rally-list"></div>
+
+            <p id="rally-empty-notice" style="text-align:center; color:#888; margin-top:20px; display:none;">
+                등록된 집결전이 없어요. 관리자 로그인 후 새 집결전을 만들어보세요.
+            </p>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 OWO GUILD #224. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <!-- 참가 신청 모달 -->
+    <div id="join-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:1002;padding:20px;">
+        <div style="background:#1e1e1e;border:1px solid #f1c40f;border-radius:10px;max-width:320px;width:100%;padding:22px;color:#e0e0e0;">
+            <h2 style="color:#f1c40f;margin-bottom:12px;font-size:1.1rem;">참가 신청</h2>
+            <input id="join-name-input" type="text" placeholder="닉네임 입력" style="width:100%;padding:9px;margin-bottom:14px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;">
+            <div style="display:flex; gap:10px;">
+                <button id="join-submit-btn" style="flex:1;padding:9px;background:#f1c40f;color:#000;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">신청하기</button>
+                <button id="join-cancel-btn" style="flex:0 0 80px;padding:9px;background:#444;color:#fff;border:none;border-radius:6px;cursor:pointer;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관리자 집결전 생성/편집 모달 -->
+    <div id="rally-edit-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:1002;padding:20px;">
+        <div style="background:#1e1e1e;border:1px solid #f1c40f;border-radius:10px;max-width:400px;width:100%;padding:22px;color:#e0e0e0;">
+            <h2 style="color:#f1c40f;margin-bottom:12px;font-size:1.1rem;">🚩 집결전 만들기</h2>
+            <label style="font-size:0.8rem;color:#aaa;">제목</label>
+            <input id="rally-title-input" type="text" placeholder="예: 6성 좀비 보스 집결" style="width:100%;padding:9px;margin:6px 0 12px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;">
+            <label style="font-size:0.8rem;color:#aaa;">시간 (KST 기준, 자유 입력)</label>
+            <input id="rally-time-input" type="text" placeholder="예: 9/15(월) 밤 11시" style="width:100%;padding:9px;margin:6px 0 12px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;">
+            <label style="font-size:0.8rem;color:#aaa;">최대 인원 (0 = 제한 없음)</label>
+            <input id="rally-capacity-input" type="number" min="0" value="0" style="width:100%;padding:9px;margin:6px 0 12px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;">
+            <label style="font-size:0.8rem;color:#aaa;">설명 (선택)</label>
+            <textarea id="rally-desc-input" rows="3" style="width:100%;padding:9px;margin:6px 0 14px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;resize:vertical;"></textarea>
+            <div style="display:flex; gap:10px;">
+                <button id="rally-save-btn" style="flex:1;padding:10px;background:#f1c40f;color:#000;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">만들기</button>
+                <button id="rally-cancel-btn" style="flex:0 0 80px;padding:10px;background:#444;color:#fff;border:none;border-radius:6px;cursor:pointer;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdmin = false;
+        let joinTargetId = null;
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                openLoginModal(() => {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                });
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+            }
+        }
+
+        function renderRallies(rallies) {
+            const list = document.getElementById('rally-list');
+            list.innerHTML = '';
+            const ids = Object.keys(rallies || {}).sort((a, b) => (rallies[a].createdAt || 0) - (rallies[b].createdAt || 0));
+
+            document.getElementById('rally-empty-notice').style.display = ids.length === 0 ? 'block' : 'none';
+
+            ids.forEach((id) => {
+                const rally = rallies[id];
+                const participants = rally.participants ? Object.values(rally.participants) : [];
+                const capacity = Number(rally.capacity || 0);
+                const pct = capacity > 0 ? Math.min(100, Math.round((participants.length / capacity) * 100)) : 0;
+
+                const card = document.createElement('div');
+                card.className = 'rally-card';
+                card.innerHTML = `
+                    <div class="rally-card-header">
+                        <div class="rally-title">🚩 ${rally.title}</div>
+                        <button class="rally-del-btn" onclick="deleteRally('${id}')">삭제</button>
+                    </div>
+                    <div class="rally-meta">⏰ ${rally.time || '시간 미정'} ${capacity > 0 ? `· 정원 ${participants.length}/${capacity}명` : `· 참가 ${participants.length}명`}</div>
+                    ${rally.desc ? `<div class="rally-desc">${rally.desc}</div>` : ''}
+                    ${capacity > 0 ? `<div class="rally-progress-bar"><div class="rally-progress-fill" style="width:${pct}%;"></div></div>` : ''}
+                    <div class="rally-participants">
+                        ${participants.map(p => `<span class="participant-chip">${p}</span>`).join('') || '<span style="color:#777; font-size:0.85rem;">아직 참가자가 없어요</span>'}
+                    </div>
+                    <button class="rally-btn-outline" onclick="openJoinModal('${id}')">✋ 참가 신청</button>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function loadRallies() {
+            db.ref('rallies').on('value', (snapshot) => {
+                renderRallies(snapshot.val() || {});
+            });
+        }
+
+        function deleteRally(id) {
+            if (!isAdmin) return;
+            if (!confirm('이 집결전을 삭제할까요?')) return;
+            db.ref('rallies/' + id).remove().then(() => showToast('삭제되었습니다.'));
+        }
+
+        /* ===================== 참가 신청 ===================== */
+        function openJoinModal(id) {
+            joinTargetId = id;
+            document.getElementById('join-name-input').value = '';
+            document.getElementById('join-overlay').style.display = 'flex';
+        }
+
+        document.getElementById('join-cancel-btn').addEventListener('click', () => {
+            document.getElementById('join-overlay').style.display = 'none';
+        });
+
+        document.getElementById('join-submit-btn').addEventListener('click', () => {
+            const name = document.getElementById('join-name-input').value.trim();
+            if (!name) {
+                showToast('닉네임을 입력해주세요.', 'error');
+                return;
+            }
+            const safeKey = name.replace(/[.#$\/\[\]]/g, '_');
+            db.ref(`rallies/${joinTargetId}/participants/${safeKey}`).set(name).then(() => {
+                document.getElementById('join-overlay').style.display = 'none';
+                showToast('참가 신청 완료!');
+            });
+        });
+
+        /* ===================== 관리자 집결전 생성 ===================== */
+        function openRallyEditModal() {
+            if (!isAdmin) return;
+            document.getElementById('rally-title-input').value = '';
+            document.getElementById('rally-time-input').value = '';
+            document.getElementById('rally-capacity-input').value = 0;
+            document.getElementById('rally-desc-input').value = '';
+            document.getElementById('rally-edit-overlay').style.display = 'flex';
+        }
+
+        document.getElementById('rally-cancel-btn').addEventListener('click', () => {
+            document.getElementById('rally-edit-overlay').style.display = 'none';
+        });
+
+        document.getElementById('rally-save-btn').addEventListener('click', () => {
+            const title = document.getElementById('rally-title-input').value.trim();
+            if (!title) {
+                showToast('제목을 입력해주세요.', 'error');
+                return;
+            }
+            const newRally = {
+                title,
+                time: document.getElementById('rally-time-input').value.trim(),
+                capacity: Number(document.getElementById('rally-capacity-input').value || 0),
+                desc: document.getElementById('rally-desc-input').value.trim(),
+                createdAt: Date.now(),
+                participants: {}
+            };
+            const newRef = db.ref('rallies').push();
+            newRef.set(newRally).then(() => {
+                document.getElementById('rally-edit-overlay').style.display = 'none';
+                showToast('집결전이 등록되었습니다!');
+            });
+        });
+
+        window.onload = loadRallies;
+    </script>
+</body>
+</html>

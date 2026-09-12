@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 건의함</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
+    <style>
+        .board-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .board-form label {
+            display: block;
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        .board-form input, .board-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 14px;
+            font-family: inherit;
+        }
+
+        .board-form textarea {
+            resize: vertical;
+        }
+
+        .board-submit-btn {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .board-anon-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 14px;
+        }
+
+        .board-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .board-item.answered {
+            border-left-color: #2ecc71;
+        }
+
+        .board-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .board-item-author {
+            font-weight: bold;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+        }
+
+        .board-item-date {
+            font-size: 0.75rem;
+            color: #777;
+        }
+
+        .board-item-content {
+            font-size: 0.92rem;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        .board-reply {
+            background: rgba(241, 196, 15, 0.08);
+            border-left: 2px solid var(--accent-gold);
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .board-status-badge {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #444;
+            color: #ccc;
+        }
+
+        .board-status-badge.answered {
+            background: #1e6b3c;
+            color: #fff;
+        }
+
+        .board-admin-tools {
+            display: none;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        body.editable-mode .board-admin-tools {
+            display: flex;
+        }
+
+        .board-admin-btn {
+            background: #333;
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .board-admin-btn.danger {
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>💬 건의함 / 피드백</h1>
+        <div class="auth-btn-area">
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">홈 (메인)</a>
+            <a href="events.html">시즌 &amp; 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+            <a href="rally.html">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html">연맹대결 계산기</a>
+            <a href="board.html" class="active">건의함</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <div class="board-form">
+                <p style="font-size:0.85rem; color:#aaa; margin-bottom:14px;">
+                    길드 운영에 대한 의견이나 건의사항을 자유롭게 남겨주세요. 익명으로도 남길 수 있어요.
+                </p>
+                <label>닉네임</label>
+                <input id="board-name-input" type="text" placeholder="닉네임 입력">
+                <div class="board-anon-check">
+                    <input type="checkbox" id="board-anon-checkbox">
+                    <label for="board-anon-checkbox" style="margin:0;">익명으로 남기기</label>
+                </div>
+                <label>내용</label>
+                <textarea id="board-content-input" rows="4" placeholder="건의하고 싶은 내용을 적어주세요"></textarea>
+                <button class="board-submit-btn" onclick="submitBoardItem()">✉️ 건의하기</button>
+            </div>
+
+            <div id="board-list"></div>
+
+            <p id="board-empty-notice" style="text-align:center; color:#888; margin-top:20px; display:none;">
+                아직 등록된 건의사항이 없어요.
+            </p>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 OWO GUILD #224. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <!-- 관리자 답변 모달 -->
+    <div id="reply-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:1002;padding:20px;">
+        <div style="background:#1e1e1e;border:1px solid #f1c40f;border-radius:10px;max-width:380px;width:100%;padding:22px;color:#e0e0e0;">
+            <h2 style="color:#f1c40f;margin-bottom:12px;font-size:1.1rem;">💬 답변 작성</h2>
+            <textarea id="reply-content-input" rows="4" style="width:100%;padding:9px;margin-bottom:14px;background:#111;border:1px solid #444;border-radius:5px;color:#fff;box-sizing:border-box;resize:vertical;"></textarea>
+            <div style="display:flex; gap:10px;">
+                <button id="reply-save-btn" style="flex:1;padding:10px;background:#f1c40f;color:#000;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">답변 저장</button>
+                <button id="reply-cancel-btn" style="flex:0 0 80px;padding:10px;background:#444;color:#fff;border:none;border-radius:6px;cursor:pointer;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdmin = false;
+        let replyTargetId = null;
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                openLoginModal(() => {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                });
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+            }
+        }
+
+        function submitBoardItem() {
+            const anon = document.getElementById('board-anon-checkbox').checked;
+            const nameRaw = document.getElementById('board-name-input').value.trim();
+            const content = document.getElementById('board-content-input').value.trim();
+
+            if (!content) {
+                showToast('내용을 입력해주세요.', 'error');
+                return;
+            }
+
+            const author = anon ? '익명' : (nameRaw || '익명');
+            const newItem = {
+                author,
+                content,
+                createdAt: Date.now(),
+                status: 'pending',
+                reply: ''
+            };
+
+            db.ref('board').push().set(newItem).then(() => {
+                document.getElementById('board-content-input').value = '';
+                document.getElementById('board-name-input').value = '';
+                document.getElementById('board-anon-checkbox').checked = false;
+                showToast('건의사항이 등록되었습니다!');
+            }).catch((err) => {
+                console.error(err);
+                showToast('등록 중 오류가 발생했습니다.', 'error');
+            });
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function renderBoard(items) {
+            const list = document.getElementById('board-list');
+            list.innerHTML = '';
+            const ids = Object.keys(items || {}).sort((a, b) => (items[b].createdAt || 0) - (items[a].createdAt || 0));
+
+            document.getElementById('board-empty-notice').style.display = ids.length === 0 ? 'block' : 'none';
+
+            ids.forEach((id) => {
+                const item = items[id];
+                const answered = item.status === 'answered';
+                const card = document.createElement('div');
+                card.className = 'board-item' + (answered ? ' answered' : '');
+                card.innerHTML = `
+                    <div class="board-item-header">
+                        <span class="board-item-author">${item.author}</span>
+                        <span class="board-status-badge ${answered ? 'answered' : ''}">${answered ? '답변완료' : '대기중'}</span>
+                        <span class="board-item-date">${formatDate(item.createdAt)}</span>
+                    </div>
+                    <div class="board-item-content">${item.content}</div>
+                    ${item.reply ? `<div class="board-reply">🛡️ 운영진 답변: ${item.reply}</div>` : ''}
+                    <div class="board-admin-tools">
+                        <button class="board-admin-btn" onclick="openReplyModal('${id}')">답변하기</button>
+                        <button class="board-admin-btn danger" onclick="deleteBoardItem('${id}')">삭제</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function loadBoard() {
+            db.ref('board').on('value', (snapshot) => {
+                renderBoard(snapshot.val() || {});
+            });
+        }
+
+        function deleteBoardItem(id) {
+            if (!isAdmin) return;
+            if (!confirm('이 건의사항을 삭제할까요?')) return;
+            db.ref('board/' + id).remove().then(() => showToast('삭제되었습니다.'));
+        }
+
+        function openReplyModal(id) {
+            if (!isAdmin) return;
+            replyTargetId = id;
+            document.getElementById('reply-content-input').value = '';
+            document.getElementById('reply-overlay').style.display = 'flex';
+        }
+
+        document.getElementById('reply-cancel-btn').addEventListener('click', () => {
+            document.getElementById('reply-overlay').style.display = 'none';
+        });
+
+        document.getElementById('reply-save-btn').addEventListener('click', () => {
+            const reply = document.getElementById('reply-content-input').value.trim();
+            if (!reply) {
+                showToast('답변 내용을 입력해주세요.', 'error');
+                return;
+            }
+            db.ref('board/' + replyTargetId).update({ reply, status: 'answered' }).then(() => {
+                document.getElementById('reply-overlay').style.display = 'none';
+                showToast('답변이 저장되었습니다!');
+            });
+        });
+
+        window.onload = loadBoard;
+    </script>
+</body>
+</html>

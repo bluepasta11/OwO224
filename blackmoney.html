@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
     <!-- 화면을 이미지로 저장하기 위한 html2canvas 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -233,6 +234,10 @@
             <a href="events.html">시즌 & 정기 이벤트</a>
             <a href="map.html">쟁탈전 배치도</a>
             <a href="blackmoney.html" class="active">블랙머니 전장</a>
+            <a href="rally.html">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html">연맹대결 계산기</a>
+            <a href="board.html">건의함</a>
         </div>
     </nav>
 
@@ -408,22 +413,24 @@
             const wasAdmin = isAdmin;
             if (wasAdmin) enableEditing(false);
             db.ref('blackmoney').set(document.getElementById('bm-save-root').innerHTML).then(() => {
-                alert("블랙머니 전장 데이터가 모든 길드원에게 저장되었습니다!");
+                showToast("블랙머니 전장 데이터가 모든 길드원에게 저장되었습니다!");
             }).catch(err => {
                 console.error(err);
-                alert("저장 중 오류가 발생했습니다. (업로드한 이미지가 너무 클 수 있어요)");
+                showToast("저장 중 오류가 발생했습니다. (업로드한 이미지가 너무 클 수 있어요)", 'error');
             });
             if (wasAdmin) enableEditing(true);
         }
 
         // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
         function loadData() {
+            markLoading(document.getElementById('bm-save-root'));
             db.ref('blackmoney').on('value', (snapshot) => {
                 const saved = snapshot.val();
                 if (saved) {
                     document.getElementById('bm-save-root').innerHTML = saved;
                     if (isAdmin) enableEditing(true);
                 }
+                markLoaded(document.getElementById('bm-save-root'));
             });
         }
 

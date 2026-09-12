@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWO Guild - 연맹대결 점수 계산기</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
+    <style>
+        .summary-card {
+            background: linear-gradient(135deg, #2a2210 0%, #1e1e1e 100%);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 60px;
+            z-index: 40;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .summary-total {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+            margin-bottom: 4px;
+        }
+
+        .summary-next {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 12px;
+        }
+
+        .box-track {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .box-chip {
+            font-size: 0.75rem;
+            padding: 4px 9px;
+            border-radius: 12px;
+            background: #333;
+            color: #999;
+            border: 1px solid #555;
+            white-space: nowrap;
+        }
+
+        .box-chip.reached {
+            background: #1e6b3c;
+            color: #fff;
+            border-color: #2ecc71;
+        }
+
+        .box-chip.next {
+            background: #4a3a10;
+            color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        .day-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .day-tab-btn {
+            background: #222;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .day-tab-btn.active {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+        }
+
+        .day-theme {
+            color: var(--accent-gold);
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 14px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .item-name {
+            font-size: 0.88rem;
+        }
+
+        .item-points {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .item-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-input-wrap input {
+            width: 70px;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 5px;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .item-subtotal {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .reset-btn {
+            background: #333;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚔️ 연맹대결 점수 계산기</h1>
+        <div class="auth-btn-area">
+            <button id="auth-btn" class="auth-btn" onclick="toggleAdmin()">관리자 로그인</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">홈 (메인)</a>
+            <a href="events.html">시즌 & 정기 이벤트</a>
+            <a href="map.html">쟁탈전 배치도</a>
+            <a href="blackmoney.html">블랙머니 전장</a>
+            <a href="rally.html">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html" class="active">연맹대결 계산기</a>
+            <a href="board.html">건의함</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <div class="summary-card">
+                <div class="summary-total" id="summary-total">현재 총점: 0점</div>
+                <div class="summary-next" id="summary-next"></div>
+                <div class="box-track" id="box-track"></div>
+            </div>
+
+            <button class="reset-btn" onclick="resetAllInputs()">🔄 입력 초기화</button>
+
+            <div class="day-tabs" id="day-tabs"></div>
+
+            <div id="day-content"></div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 OWO GUILD #224. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        let isAdmin = false;
+
+        function toggleAdmin() {
+            if (!isAdmin) {
+                openLoginModal(() => {
+                    isAdmin = true;
+                    document.body.classList.add('editable-mode');
+                    document.getElementById('auth-btn').innerText = "관리자 로그아웃";
+                });
+            } else {
+                isAdmin = false;
+                document.body.classList.remove('editable-mode');
+                document.getElementById('auth-btn').innerText = "관리자 로그인";
+            }
+        }
+
+        // ===================== 연맹대결 데이터 (요일별 항목/포인트) =====================
+        const SHOWDOWN_DATA = {
+            '월': {
+                theme: '셸터 발전',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['건물 업그레이드에 정밀 부품 1개 소비', 2700],
+                    ['건축물 전투력 100 향상', 110],
+                    ['과학기술 전투력 100 향상', 110],
+                    ['지혜 훈장 1개 소모', 45],
+                    ['건축물 업그레이드에 임의 가속 1분 소모', 55],
+                    ['과학 연구에 임의 가속 1분 소모', 55],
+                    ['코인 10000 채집 (레이더 채집 이벤트는 별도)', 330],
+                    ['목재 10000 채집 (레이더 채집 이벤트는 별도)', 165],
+                    ['전기 10000 채집 (레이더 채집 이벤트는 별도)', 165],
+                    ['철 10000 채집 (레이더 채집 이벤트는 별도)', 165]
+                ]
+            },
+            '화': {
+                theme: '영웅 육성',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['레이더 이벤트 1회 완료', 8800],
+                    ['전용 장비 조각 1개 소모 시마다', 6075],
+                    ['고급 모집 1회 진행', 4950],
+                    ['주황 영웅 조각 1개 소모하여 성급 업그레이드', 6075],
+                    ['보라 영웅 조각 1개 소모하여 성급 업그레이드', 1350],
+                    ['파랑 영웅 조각 1개 소모하여 성급 업그레이드', 675]
+                ]
+            },
+            '수': {
+                theme: '매일 향상',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['S급 블랙머니 수송차량 1회 호위', 90000],
+                    ['1회 주황 [암영 작전] 임무 진행', 45000],
+                    ['에너지 코어 1개 소모', 4050],
+                    ['영웅 장비 행운 상자 1개 열기', 9000],
+                    ['D6 빨강 장비 업그레이드 시 에너지 코어 소모 추가 점수', 2700],
+                    ['DX-청사진 1개 소모', 40500],
+                    ['유닛 훈련/진급에 임의 가속 1분 소모', 55],
+                    ['훈련으로 Lv.1 유닛 1명 획득', 66],
+                    ['훈련으로 Lv.2 유닛 1명 획득', 99],
+                    ['훈련으로 Lv.3 유닛 1명 획득', 143],
+                    ['훈련으로 Lv.4 유닛 1명 획득', 209],
+                    ['훈련으로 Lv.5 유닛 1명 획득', 308],
+                    ['훈련으로 Lv.6 유닛 1명 획득', 385],
+                    ['훈련으로 Lv.7 유닛 1명 획득', 495],
+                    ['훈련으로 Lv.8 유닛 1명 획득', 632],
+                    ['훈련으로 Lv.9 유닛 1명 획득', 814],
+                    ['훈련으로 Lv.10 유닛 1명 획득', 1001]
+                ]
+            },
+            '목': {
+                theme: '전쟁 대비 달인',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['주황 품질 칩 보물상자 1개 오픈', 180000],
+                    ['보라 품질 칩 보물상자 1개 오픈', 38250],
+                    ['파랑 품질 칩 보물상자 1개 오픈', 9000],
+                    ['초록 품질 칩 보물상자 1개 오픈', 1800],
+                    ['레이더 이벤트 1회 완료', 8800],
+                    ['기어 1개 소모', 13],
+                    ['티타늄 1개 소모', 1215],
+                    ['설계 도면 1개 소모', 2430],
+                    ['건물 업그레이드에 정밀 부품 1개 소비', 2700],
+                    ['건축물 업그레이드에 임의 가속 1분 소모', 55],
+                    ['과학 연구에 임의 가속 1분 소모', 55],
+                    ['유닛 훈련/진급에 임의 가속 1분 소모', 55],
+                    ['Lv.1~10 유랑 좀비 1마리 킬', 2640],
+                    ['Lv.11~20 유랑 좀비 1마리 킬', 2970],
+                    ['Lv.21~30 유랑 좀비 1마리 킬', 3300],
+                    ['Lv.31 이상 유랑 좀비 1마리 킬', 3630],
+                    ['집결로 1~4레벨 거대 좀비 킬', 5500],
+                    ['집결로 5~7레벨 거대 좀비 킬', 6875],
+                    ['집결로 8~10레벨 거대 좀비 킬', 8250],
+                    ['집결로 11~13레벨 거대 좀비 킬', 9625],
+                    ['집결로 14~16레벨 거대 좀비 킬', 11000],
+                    ['집결로 17~19레벨 거대 좀비 킬', 12375],
+                    ['집결로 20레벨 이상 거대 좀비 킬', 13750]
+                ]
+            },
+            '금': {
+                theme: '전면적 발전',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['고급 전술 식량 100개 소모', 324],
+                    ['영양 약제 1개 소모', 450],
+                    ['잠재 칩 1개 소모', 1620],
+                    ['특수 임무 명예 훈장 1개 소모', 3375],
+                    ['일반 특훈 조례 1개 소모', 1620],
+                    ['고급 특훈 조례 1개 소모', 9720],
+                    ['주황 품질 칩 보물상자 1개 오픈', 180000],
+                    ['보라 품질 칩 보물상자 1개 오픈', 38250],
+                    ['파랑 품질 칩 보물상자 1개 오픈', 9000],
+                    ['초록 품질 칩 보물상자 1개 오픈', 1800],
+                    ['건물 업그레이드에 정밀 부품 1개 소비', 2700],
+                    ['기어 1개 소모', 13],
+                    ['티타늄 1개 소모', 1215],
+                    ['설계 도면 1개 소모', 2430],
+                    ['에너지 코어 1개 소모', 4050],
+                    ['전용 장비 조각 1개 소모 시마다', 6075],
+                    ['D6 빨강 장비 업그레이드 시 에너지 코어 소모 추가 점수', 2700],
+                    ['DX-청사진 1개 소모', 40500],
+                    ['주황 영웅 조각 1개 소모하여 성급 업그레이드', 6075],
+                    ['보라 영웅 조각 1개 소모하여 성급 업그레이드', 1350],
+                    ['파랑 영웅 조각 1개 소모하여 성급 업그레이드', 675],
+                    ['지혜 훈장 1개 소모', 45],
+                    ['건축물 업그레이드에 임의 가속 1분 소모', 55],
+                    ['과학 연구에 임의 가속 1분 소모', 55],
+                    ['유닛 훈련/진급에 임의 가속 1분 소모', 55]
+                ]
+            },
+            '토': {
+                theme: '전군 격퇴',
+                items: [
+                    ['패키지 구매로 다이아 1 획득', 10],
+                    ['S급 블랙머니 수송차량 1회 호위', 90000],
+                    ['1회 주황 [암영 작전] 임무 진행', 45000],
+                    ['임의 가속 누적 1분 사용', 55],
+                    ['적군 1레벨 병사 10명 처치', 5],
+                    ['적군 2레벨 병사 10명 처치', 11],
+                    ['적군 3레벨 병사 10명 처치', 16],
+                    ['적군 4레벨 병사 10명 처치', 22],
+                    ['적군 5레벨 병사 10명 처치', 30],
+                    ['적군 6레벨 병사 10명 처치', 38],
+                    ['적군 7레벨 병사 10명 처치', 49],
+                    ['적군 8레벨 병사 10명 처치', 66],
+                    ['적군 9레벨 병사 10명 처치', 82],
+                    ['적군 10레벨 병사 10명 처치', 110],
+                    ['아군 1레벨 병사 10명 패배', 4],
+                    ['아군 2레벨 병사 10명 패배', 9],
+                    ['아군 3레벨 병사 10명 패배', 13],
+                    ['아군 4레벨 병사 10명 패배', 18],
+                    ['아군 5레벨 병사 10명 패배', 24],
+                    ['아군 6레벨 병사 10명 패배', 31],
+                    ['아군 7레벨 병사 10명 패배', 40],
+                    ['아군 8레벨 병사 10명 패배', 54],
+                    ['아군 9레벨 병사 10명 패배', 67],
+                    ['아군 10레벨 병사 10명 패배', 90],
+                    ['대결 연맹의 1레벨 병사 10명 처치 (추가 포인트)', 33],
+                    ['대결 연맹의 2레벨 병사 10명 처치 (추가 포인트)', 55],
+                    ['대결 연맹의 3레벨 병사 10명 처치 (추가 포인트)', 77],
+                    ['대결 연맹의 4레벨 병사 10명 처치 (추가 포인트)', 110],
+                    ['대결 연맹의 5레벨 병사 10명 처치 (추가 포인트)', 154],
+                    ['대결 연맹의 6레벨 병사 10명 처치 (추가 포인트)', 198],
+                    ['대결 연맹의 7레벨 병사 10명 처치 (추가 포인트)', 253],
+                    ['대결 연맹의 8레벨 병사 10명 처치 (추가 포인트)', 319],
+                    ['대결 연맹의 9레벨 병사 10명 처치 (추가 포인트)', 407],
+                    ['대결 연맹의 10레벨 병사 10명 처치 (추가 포인트)', 506]
+                ]
+            }
+        };
+
+        const BOX_THRESHOLDS = [12000, 48000, 156000, 192000, 300000, 624000, 732000, 1056000, 2028000];
+
+        const DAY_KEYS = Object.keys(SHOWDOWN_DATA);
+        let activeDay = DAY_KEYS[0];
+        const STORAGE_KEY = 'owo_showdown_inputs_v1';
+
+        function loadStoredInputs() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveStoredInputs(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function inputKey(day, idx) {
+            return day + '_' + idx;
+        }
+
+        function renderDayTabs() {
+            const tabsEl = document.getElementById('day-tabs');
+            tabsEl.innerHTML = '';
+            DAY_KEYS.forEach((day) => {
+                const btn = document.createElement('button');
+                btn.className = 'day-tab-btn' + (day === activeDay ? ' active' : '');
+                btn.textContent = day + '요일';
+                btn.onclick = () => {
+                    activeDay = day;
+                    renderDayTabs();
+                    renderDayContent();
+                };
+                tabsEl.appendChild(btn);
+            });
+        }
+
+        function renderDayContent() {
+            const stored = loadStoredInputs();
+            const container = document.getElementById('day-content');
+            const dayData = SHOWDOWN_DATA[activeDay];
+            container.innerHTML = '<div class="day-theme">' + activeDay + '요일 · ' + dayData.theme + '</div>';
+
+            dayData.items.forEach((item, idx) => {
+                const name = item[0];
+                const points = item[1];
+                const key = inputKey(activeDay, idx);
+                const savedVal = stored[key] || '';
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML =
+                    '<div class="item-info">' +
+                        '<div class="item-name">' + name + '</div>' +
+                        '<div class="item-points">' + points.toLocaleString() + '점 / 개</div>' +
+                    '</div>' +
+                    '<div class="item-input-wrap">' +
+                        '<input type="number" min="0" placeholder="0" value="' + savedVal + '" data-day="' + activeDay + '" data-idx="' + idx + '" data-points="' + points + '" oninput="onItemInput(this)">' +
+                        '<span class="item-subtotal" id="subtotal-' + key + '">' + (savedVal ? (savedVal * points).toLocaleString() : 0) + '점</span>' +
+                    '</div>';
+                container.appendChild(row);
+            });
+        }
+
+        function onItemInput(inputEl) {
+            const day = inputEl.dataset.day;
+            const idx = inputEl.dataset.idx;
+            const points = Number(inputEl.dataset.points);
+            const qty = Number(inputEl.value || 0);
+            const key = inputKey(day, idx);
+
+            document.getElementById('subtotal-' + key).textContent = (qty * points).toLocaleString() + '점';
+
+            const stored = loadStoredInputs();
+            if (qty > 0) {
+                stored[key] = qty;
+            } else {
+                delete stored[key];
+            }
+            saveStoredInputs(stored);
+
+            updateSummary();
+        }
+
+        function calcGrandTotal() {
+            const stored = loadStoredInputs();
+            let total = 0;
+            DAY_KEYS.forEach((day) => {
+                SHOWDOWN_DATA[day].items.forEach((item, idx) => {
+                    const points = item[1];
+                    const key = inputKey(day, idx);
+                    if (stored[key]) total += stored[key] * points;
+                });
+            });
+            return total;
+        }
+
+        function updateSummary() {
+            const total = calcGrandTotal();
+            document.getElementById('summary-total').textContent = '현재 총점: ' + total.toLocaleString() + '점';
+
+            const nextBoxIdx = BOX_THRESHOLDS.findIndex((t) => total < t);
+            const nextEl = document.getElementById('summary-next');
+            if (nextBoxIdx === -1) {
+                nextEl.textContent = '🎉 모든 상자(1~' + BOX_THRESHOLDS.length + '호)를 달성했어요!';
+            } else {
+                const remain = BOX_THRESHOLDS[nextBoxIdx] - total;
+                nextEl.textContent = (nextBoxIdx + 1) + '호 상자까지 ' + remain.toLocaleString() + '점 남았어요.';
+            }
+
+            const track = document.getElementById('box-track');
+            track.innerHTML = '';
+            BOX_THRESHOLDS.forEach((threshold, i) => {
+                const chip = document.createElement('span');
+                const reached = total >= threshold;
+                chip.className = 'box-chip' + (reached ? ' reached' : (i === nextBoxIdx ? ' next' : ''));
+                chip.textContent = (i + 1) + '호 ' + (reached ? '✓' : threshold.toLocaleString());
+                track.appendChild(chip);
+            });
+        }
+
+        function resetAllInputs() {
+            if (!confirm('입력한 모든 개수를 초기화할까요? (이 브라우저에만 적용돼요)')) return;
+            localStorage.removeItem(STORAGE_KEY);
+            renderDayContent();
+            updateSummary();
+            showToast('초기화되었습니다.');
+        }
+
+        renderDayTabs();
+        renderDayContent();
+        updateSummary();
+    </script>
+</body>
+</html>

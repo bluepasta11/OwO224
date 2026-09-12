@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
     <script src="notice-popup.js"></script>
     <style>
         .th-admin, .td-admin {
@@ -44,6 +45,10 @@
             <a href="events.html">시즌 & 정기 이벤트</a>
             <a href="map.html">쟁탈전 배치도</a>
             <a href="blackmoney.html">블랙머니 전장</a>
+            <a href="rally.html">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html">연맹대결 계산기</a>
+            <a href="board.html">건의함</a>
         </div>
     </nav>
 
@@ -364,11 +369,14 @@
             db.ref('main/sidebar').set(document.getElementById('sidebar-content').innerHTML);
 
             if (wasAdmin) enableEditing(true);
-            alert("수정사항이 모든 길드원에게 저장되었습니다!");
+            showToast("수정사항이 모든 길드원에게 저장되었습니다!");
         }
 
         // 실시간 리스너: 다른 사람이 저장하면 내 화면도 자동으로 업데이트됩니다.
+        let mainDataLoadedOnce = false;
         function loadData() {
+            markLoading(document.getElementById('main-content'));
+            markLoading(document.getElementById('sidebar-content'));
             db.ref('main').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -377,6 +385,9 @@
                 }
                 updateMemberCounts();
                 if (isAdmin) enableEditing(true);
+                markLoaded(document.getElementById('main-content'));
+                markLoaded(document.getElementById('sidebar-content'));
+                mainDataLoadedOnce = true;
             });
         }
 

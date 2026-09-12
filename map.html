@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="auth-modal.js"></script>
+    <script src="ui-utils.js"></script>
     <style>
         .map-controls {
             margin-bottom: 25px;
@@ -166,6 +167,10 @@
             <a href="events.html">시즌 & 정기 이벤트</a>
             <a href="map.html" class="active">쟁탈전 배치도</a>
             <a href="blackmoney.html">블랙머니 전장</a>
+            <a href="rally.html">집결전 스케줄러</a>
+            <a href="calculator.html">육성 재료 계산기</a>
+            <a href="showdown.html">연맹대결 계산기</a>
+            <a href="board.html">건의함</a>
         </div>
     </nav>
 
@@ -187,8 +192,18 @@
                     <option value="#ffffff">초기화 (흰색)</option>
                 </select>
 
+                <label style="font-weight:bold; color:#f39c12;">배치 인원:</label>
+                <select id="member-select">
+                    <option value="">(이름 유지 · 색상만 칠하기)</option>
+                    <option value="__clear__">(이름 지우기)</option>
+                </select>
+
                 <button onclick="downloadMapImage()">💾 이미지 저장</button>
             </div>
+
+            <p id="member-select-hint" style="display:none; text-align:center; color:#aaa; font-size:0.8rem; margin-bottom:12px;">
+                💡 "배치 인원"에서 이름을 고르면, 칸을 클릭할 때 색칠과 동시에 이름도 자동으로 채워져요.
+            </p>
 
             <!-- 14x14 그리드 맵 보드 -->
             <div id="map-board">
@@ -221,8 +236,20 @@
 
         const board = document.getElementById('map-board');
         const colorSelect = document.getElementById('color-select');
+        const memberSelect = document.getElementById('member-select');
         const shrineSelect = document.getElementById('shrine-select');
         const shrineDisplay = document.getElementById('shrine-display');
+
+        function populateMemberSelect() {
+            getGuildMemberNames().then((names) => {
+                names.forEach((name) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    memberSelect.appendChild(opt);
+                });
+            });
+        }
 
         // 14x14 셀 (총 196개) 생성
         function initBoard() {
@@ -235,6 +262,11 @@
                 cell.addEventListener('mousedown', (e) => {
                     if (isAdmin && e.target === cell) {
                         cell.style.backgroundColor = colorSelect.value;
+                        if (memberSelect.value === '__clear__') {
+                            cell.innerText = '';
+                        } else if (memberSelect.value) {
+                            cell.innerText = memberSelect.value;
+                        }
                     }
                 });
 
@@ -267,6 +299,8 @@
             });
             shrineSelect.disabled = !enable;
             colorSelect.disabled = !enable;
+            memberSelect.disabled = !enable;
+            document.getElementById('member-select-hint').style.display = enable ? 'block' : 'none';
         }
 
         function updateShrineName() {
@@ -290,10 +324,10 @@
             };
 
             db.ref('map').set(mapState).then(() => {
-                alert("배치도 설정이 모든 길드원에게 저장되었습니다!");
+                showToast("배치도 설정이 모든 길드원에게 저장되었습니다!");
             }).catch(err => {
                 console.error(err);
-                alert("저장 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
+                showToast("저장 중 오류가 발생했습니다. 콘솔을 확인해주세요.", 'error');
             });
         }
 
@@ -329,6 +363,7 @@
 
         window.onload = () => {
             initBoard();
+            populateMemberSelect();
             enableEditing(false);
         };
     </script>
