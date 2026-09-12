@@ -52,11 +52,13 @@
         </div>
     </nav>
 
-    <!-- 왼쪽 플로팅 길드원 사이드바 -->
+    <!-- 길드원 패널: 데스크탑=드로어 / 모바일=바텀시트 -->
+    <button class="member-trigger" id="member-trigger" onclick="toggleMemberPanel()">👥 길드원<span id="member-trigger-count"></span></button>
+    <div class="member-backdrop" id="member-backdrop" onclick="closeMemberPanel()"></div>
     <aside class="guild-members-sidebar" id="sidebar-panel">
-        <div class="sidebar-header" onclick="toggleSidebarPanel()">
+        <div class="sidebar-header">
             <span>🛡️ 길드원 목록</span>
-            <span class="toggle-icon" id="sidebar-toggle-icon">▲</span>
+            <button class="sidebar-close-btn" onclick="closeMemberPanel()">✕</button>
         </div>
         <div class="sidebar-content" id="sidebar-content" style="opacity:0;">
             
@@ -392,11 +394,15 @@
         }
 
         function updateMemberCounts() {
+            let total = 0;
             document.querySelectorAll('.rank-card').forEach(card => {
                 const count = card.querySelectorAll('.member-item').length;
                 const countEl = card.querySelector('.count-val');
                 if (countEl) countEl.innerText = count;
+                total += count;
             });
+            const triggerCount = document.getElementById('member-trigger-count');
+            if (triggerCount) triggerCount.textContent = ' ' + total + '명';
         }
 
         function toggleRankCard(headerEl) {
@@ -404,11 +410,20 @@
             card.classList.toggle('collapsed');
         }
 
-        function toggleSidebarPanel() {
-            const panel = document.getElementById('sidebar-panel');
-            const icon = document.getElementById('sidebar-toggle-icon');
-            panel.classList.toggle('collapsed');
-            icon.textContent = panel.classList.contains('collapsed') ? '▼' : '▲';
+        function toggleMemberPanel() {
+            if (document.body.classList.contains('member-panel-open')) {
+                closeMemberPanel();
+            } else {
+                openMemberPanel();
+            }
+        }
+
+        function openMemberPanel() {
+            document.body.classList.add('member-panel-open');
+        }
+
+        function closeMemberPanel() {
+            document.body.classList.remove('member-panel-open');
         }
 
         function addRankMember(rank) {
@@ -479,6 +494,10 @@
         }
 
         function deleteRow(btn) { btn.closest('tr').remove(); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeMemberPanel();
+        });
 
         window.onload = loadData;
     </script>

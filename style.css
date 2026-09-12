@@ -229,55 +229,73 @@ footer {
 }
 
 /* ========================================== */
-/* 플로팅 길드원 패널 스타일 (스크롤 & 접기 기능) */
+/* 길드원 패널: 데스크탑=드로어, 모바일=바텀시트 */
 /* ========================================== */
-.guild-members-sidebar {
+.member-trigger {
     position: fixed;
-    top: 200px;
-    left: 15px;
-    width: 260px;
-    height: calc(100vh - 220px);
-    background: #f4eae1;
-    border: 2px solid #b89774;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    font-family: sans-serif;
-}
-
-.sidebar-header {
-    background: linear-gradient(180deg, #8b5a2b 0%, #5a3818 100%);
-    color: #fff;
-    padding: 10px 12px;
+    z-index: 200;
+    background: var(--accent-gold);
+    color: #000;
+    border: none;
     font-weight: bold;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #422810;
-    flex-shrink: 0;
     cursor: pointer;
-    user-select: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-.sidebar-header .toggle-icon {
-    font-size: 0.75rem;
-    transition: transform 0.2s;
-}
-
-.guild-members-sidebar.collapsed .sidebar-content {
+body.member-panel-open .member-trigger {
     display: none;
 }
 
-.guild-members-sidebar.collapsed .sidebar-header .toggle-icon {
-    transform: rotate(-90deg);
+.member-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 150;
+    display: none;
+}
+
+body.member-panel-open .member-backdrop {
+    display: block;
+}
+
+.guild-members-sidebar {
+    position: fixed;
+    z-index: 180;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    background: #161616;
+    color: var(--accent-gold);
+    padding: 12px 14px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.sidebar-close-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
 }
 
 .sidebar-content {
-    padding: 8px;
+    padding: 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -286,8 +304,8 @@ footer {
 }
 
 .officer-section {
-    background: #eaddca;
-    border: 1px solid #c2b19c;
+    background: #1a1a1a;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 8px 6px;
 }
@@ -295,10 +313,10 @@ footer {
 .officer-title-bar {
     font-size: 0.8rem;
     font-weight: bold;
-    color: #6b4c33;
+    color: var(--accent-gold);
     margin-bottom: 6px;
     text-align: center;
-    border-bottom: 1px dashed #b8a590;
+    border-bottom: 1px dashed var(--border-color);
     padding-bottom: 4px;
     display: flex;
     justify-content: space-between;
@@ -312,8 +330,8 @@ footer {
 }
 
 .officer-card {
-    background: #fff;
-    border: 1px solid #d4c4b0;
+    background: #222;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 4px 6px;
     text-align: center;
@@ -323,36 +341,35 @@ footer {
 .officer-role {
     font-size: 0.75rem;
     font-weight: bold;
-    color: #d35400;
+    color: var(--accent-orange);
 }
 
 .officer-name {
     font-size: 0.8rem;
-    color: #2c3e50;
+    color: #eee;
     font-weight: bold;
     margin-top: 2px;
 }
 
 .rank-card {
-    background: #fdfbf7;
-    border: 1px solid #dcd1c4;
+    background: #1a1a1a;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .rank-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 8px;
-    background: #ebdccb;
+    padding: 8px 10px;
+    background: #222;
     cursor: pointer;
     user-select: none;
 }
 
 .rank-header:hover {
-    background: #e3d2be;
+    background: #292929;
 }
 
 .rank-badge-box {
@@ -362,23 +379,22 @@ footer {
 }
 
 .rank-badge {
-    color: #fff;
+    color: #000;
     font-weight: 900;
     font-size: 0.7rem;
     padding: 1px 5px;
     border-radius: 4px;
-    text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
 }
 
-.badge-r5 { background: #f1c40f; border: 1px solid #d35400; }
-.badge-r4 { background: #e67e22; border: 1px solid #b03a2e; }
-.badge-r3 { background: #d35400; border: 1px solid #7e5109; }
-.badge-r2 { background: #7f8c8d; border: 1px solid #515a5a; }
-.badge-r1 { background: #95a5a6; border: 1px solid #707b7c; }
+.badge-r5 { background: #f1c40f; }
+.badge-r4 { background: #e67e22; }
+.badge-r3 { background: #d35400; color: #fff; }
+.badge-r2 { background: #95a5a6; }
+.badge-r1 { background: #7f8c8d; color: #fff; }
 
 .rank-title {
     font-weight: bold;
-    color: #4a3b32;
+    color: #eee;
     font-size: 0.85rem;
 }
 
@@ -390,13 +406,13 @@ footer {
 
 .rank-count {
     font-size: 0.75rem;
-    color: #7f6c5f;
+    color: #999;
     font-weight: bold;
 }
 
 .toggle-icon {
     font-size: 0.7rem;
-    color: #6b4c33;
+    color: #999;
     transition: transform 0.2s;
 }
 
@@ -413,7 +429,7 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    background: #fff;
+    background: #161616;
     max-height: 180px;
     overflow-y: auto;
 }
@@ -423,23 +439,65 @@ footer {
     justify-content: space-between;
     align-items: center;
     font-size: 0.85rem;
-    color: #2c3e50;
-    padding: 2px 4px;
+    color: #ddd;
+    padding: 4px 6px;
 }
 
-@media (max-width: 1400px) {
-    /* 화면이 좁으면 고정 사이드바 대신, 본문 위쪽에 접었다 펼 수 있는 패널로 전환 */
-    .guild-members-sidebar {
-        position: static;
-        width: 100%;
-        max-width: 900px;
-        height: auto;
-        margin: 20px auto 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+/* 데스크탑: 왼쪽에서 나오는 드로어 */
+@media (min-width: 1001px) {
+    .member-trigger {
+        left: 0;
+        top: 220px;
+        padding: 14px 8px;
+        border-radius: 0 8px 8px 0;
+        writing-mode: vertical-rl;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
     }
 
-    .guild-members-sidebar .sidebar-content {
-        max-height: 55vh;
+    .guild-members-sidebar {
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 300px;
+        border-right: 2px solid var(--accent-gold);
+        border-top: none;
+        border-bottom: none;
+        border-left: none;
+        transform: translateX(-100%);
+    }
+
+    body.member-panel-open .guild-members-sidebar {
+        transform: translateX(0);
+    }
+}
+
+/* 모바일/태블릿: 아래에서 올라오는 바텀시트 */
+@media (max-width: 1000px) {
+    .member-trigger {
+        right: 16px;
+        bottom: 20px;
+        padding: 12px 18px;
+        border-radius: 24px;
+        font-size: 0.85rem;
+    }
+
+    .guild-members-sidebar {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        max-height: 72vh;
+        border-radius: 16px 16px 0 0;
+        border-top: 2px solid var(--accent-gold);
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        transform: translateY(100%);
+    }
+
+    body.member-panel-open .guild-members-sidebar {
+        transform: translateY(0);
     }
 }
 
@@ -467,9 +525,5 @@ footer {
     .nav-links a {
         margin: 0 8px;
         font-size: 0.9rem;
-    }
-
-    .guild-members-sidebar {
-        max-width: 100%;
     }
 }
